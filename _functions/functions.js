@@ -13,7 +13,7 @@ export const firstChar = (string, isNumberActive, setNumberActive, char) =>
   if(string.length === 1 && string[0] === '0')
     return char + '';
   else if(isNumberActive !== false)
-      return resultOperation(string + char, null, setNumberActive);
+      return resultOperation(string + char, () => {return}, setNumberActive);
   else 
     return string + char + '';
 }
@@ -32,9 +32,10 @@ export const resultOperation = (string, setPoint, setNumberActive) =>
   return resultToString.replaceAll('.', ',');
 }
 
-export const doubleOperation = (string, setPoint, char) => 
+export const blockDoubleOperation = (string, setPoint, char) => 
 {     
-    if(string[string.length - 1] < '0' || string[string.length - 1] > '9')
+    const size = string.length - 1;
+    if((string[size] < '0' || string[size] > '9') && string[size] !== '!')
       return string + '';
     else
     {
@@ -44,10 +45,11 @@ export const doubleOperation = (string, setPoint, char) =>
       
 }
 
-export const pointOperation = (string, setPoint, pointUse, char) => 
+export const blockDoubleChar = (string, setPoint, pointUse, char) => 
 {
-    if((string[string.length - 1] < '0' || string[string.length - 1] > '9') || pointUse === true)
-      return string + '';
+    const size = string.length - 1;
+    if((string[size] < '0' || string[size] > '9') || pointUse === true)
+        return string + '';
     else
     {
       setPoint(true);

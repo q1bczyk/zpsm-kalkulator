@@ -4,7 +4,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { Dimensions } from 'react-native';
 import createStyles from './_styles/styles';
 import ButtonComponent from './_components/ButtonComponent';
-import { resetOperation, firstChar, resultOperation, doubleOperation, pointOperation, expOperation } from './_functions/functions';
+import { resetOperation, firstChar, resultOperation, blockDoubleOperation, blockDoubleChar, expOperation } from './_functions/functions';
 import { number } from 'mathjs';
 
 type SectionProps = PropsWithChildren<{
@@ -107,7 +107,7 @@ function App(): JSX.Element {
     },
     { 
         label: "÷", 
-        onPress: () => setMath(doubleOperation(mathExpression, setPoint, '÷')),
+        onPress: () => setMath(blockDoubleOperation(mathExpression, setPoint, '÷')),
         background: orangeColor,
         alwaysDisable: true,
         doubleBox: false, 
@@ -145,7 +145,7 @@ function App(): JSX.Element {
     },
     { 
         label: "eⁿ", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => {setMath(firstChar(mathExpression, isNumberActive, setNumberActive, 'e^')); setNumberActive(true)},  
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false,  
@@ -180,7 +180,7 @@ function App(): JSX.Element {
     },
     { 
         label: "x", 
-        onPress: () => setMath(doubleOperation(mathExpression, setPoint, 'x')),
+        onPress: () => setMath(blockDoubleOperation(mathExpression, setPoint, 'x')),
         background: orangeColor,
         alwaysDisable: true,
         doubleBox: false, 
@@ -253,7 +253,7 @@ function App(): JSX.Element {
     },
     { 
         label: "-", 
-        onPress: () => setMath(doubleOperation(mathExpression, setPoint, '-')), 
+        onPress: () => setMath(blockDoubleOperation(mathExpression, setPoint, '-')), 
         background: orangeColor,
         alwaysDisable: true,
         doubleBox: false, 
@@ -263,7 +263,7 @@ function App(): JSX.Element {
 
     { 
         label: "x!", 
-        onPress: () => setMath(doubleOperation(mathExpression + '!', setPoint)), 
+        onPress: () => setMath(blockDoubleChar(mathExpression, setPoint, pointUse, '!')), 
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false, 
@@ -326,7 +326,7 @@ function App(): JSX.Element {
     },
     { 
         label: "+", 
-        onPress: () => setMath(doubleOperation(mathExpression, setPoint, '+')), 
+        onPress: () => setMath(blockDoubleOperation(mathExpression, setPoint, '+')), 
         background: orangeColor,
         alwaysDisable: true,
         doubleBox: false, 
@@ -385,7 +385,7 @@ function App(): JSX.Element {
     },
     { 
         label: ",", 
-        onPress: () => setMath(pointOperation(mathExpression, setPoint, pointUse, ',')), 
+        onPress: () => setMath(blockDoubleChar(mathExpression, setPoint, pointUse, ',')), 
         background: lightColor,
         alwaysDisable: true,
         doubleBox: false,
