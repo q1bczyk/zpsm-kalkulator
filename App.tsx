@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import type {PropsWithChildren} from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import _ from 'lodash';
 import { Dimensions } from 'react-native';
-import { atan2, chain, derivative, e, evaluate, expression, log, pi, pow, round, sqrt, string } from 'mathjs'
 import createStyles from './_styles/styles';
 import ButtonComponent from './_components/ButtonComponent';
-import { buttonsData } from './_buttonData/buttonData';
-
+import { resetOperation, firstChar, resultOperation, doubleOperation, pointOperation, expOperation } from './_functions/functions';
+import { number } from 'mathjs';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -29,69 +27,379 @@ function App(): JSX.Element {
     };
     Dimensions.addEventListener('change', handleOrientationChange);
   }, []);
-  
-  const zeroFunction = (string, char) => 
-  {
-    if(string.length === 1 && string[0] === '0')
-      return char + '';
-    else if(isNumberActive !== false)
-        return resultOperation(string + char);
-    else 
-      return string + char + '';
-  }
-
-  const doubleOperation = (string, char) => 
-  {     
-      if(string[string.length - 1] < '0' || string[string.length - 1] > '9')
-        return string + '';
-      else
-      {
-          setPoint(false);
-          return string + ' ' + char + ' ';
-      } 
-        
-  }
-
-  const pointOperation = (string, char) => 
-  {
-      if((string[string.length - 1] < '0' || string[string.length - 1] > '9') || pointUse === true)
-        return string + '';
-      else
-      {
-        setPoint(true);
-        return string + char + '';
-      } 
-        
-  }
-
-  const resetOperation = () => 
-  {
-      setPoint(false);
-      setNumberActive(false);
-      return '0';
-  }
-
-  const resultOperation = (string) => 
-  {
-    let modifiedString = string.replaceAll(',', '.').replaceAll('÷', '/').replaceAll('×', '*')
-    const result = evaluate(modifiedString);
-    if(!isNaN(result) && typeof result === 'number' && result % 1 !== 0)
-      setPoint(true);
-    let resultToString = result + '';
-    setNumberActive(false);
-    return resultToString.replaceAll('.', ',');
-  }
-
-  const exp = (value, string) =>
-  {
-    if(string[string.length - 1] < '0' || string[string.length - 1] > '9')
-        return string + '';
-    const convertString = string + '^' + value;
-    const result = resultOperation(convertString);
-    return result;
-  }
 
   const styles = createStyles(isLandscape);
+
+  const darkColor = '#6E6E6E';
+  const orangeColor = '#DF8D00';
+  const lightColor = '#878787'
+
+  const buttonsData = [
+    { 
+        label: "(", 
+        onPress: () => setMath(firstChar(mathExpression, '(')), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false, 
+    },
+    { 
+        label: ")", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "mc", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "m+", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "m-", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "mr", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "+/-", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "%", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "AC", 
+        onPress: () => setMath(resetOperation(setNumberActive, setPoint)), 
+        background: darkColor,
+        alwaysDisable: true,
+        doubleBox: false, 
+    },
+    { 
+        label: "", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: true, 
+    },
+    { 
+        label: "÷", 
+        onPress: () => setMath(doubleOperation(mathExpression, setPoint, '÷')),
+        background: orangeColor,
+        alwaysDisable: true,
+        doubleBox: false, 
+    },
+
+    /////////////////////////////////////////////////
+
+    { 
+        label: "2ⁿᵈ", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false, 
+    },
+    { 
+        label: "x²", 
+        onPress: () => setMath(expOperation('2', mathExpression, setNumberActive)), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "x³", 
+        onPress: () => setMath(expOperation('3', mathExpression, setNumberActive)),
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "xⁿ", 
+        onPress: () => {setMath(mathExpression + '^'); setNumberActive(true)}, 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "eⁿ", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "10ⁿ", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "7", 
+        onPress: () => setMath(firstChar(mathExpression, isNumberActive, setNumberActive, '7')), 
+        background: lightColor,
+        alwaysDisable: true,
+        doubleBox: false,  
+    },
+    { 
+        label: "8", 
+        onPress: () => setMath(firstChar(mathExpression, isNumberActive, setNumberActive, '8')),  
+        background: lightColor,
+        alwaysDisable: true,
+        doubleBox: false,  
+    },
+    { 
+        label: "9", 
+        onPress: () => setMath(firstChar(mathExpression, isNumberActive, setNumberActive, '9')), 
+        background: lightColor,
+        alwaysDisable: true,
+        doubleBox: false, 
+    },
+    { 
+        label: "x", 
+        onPress: () => setMath(doubleOperation(mathExpression, setPoint, 'x')),
+        background: orangeColor,
+        alwaysDisable: true,
+        doubleBox: false, 
+    },
+
+    /////////////////////////////////////////////////
+
+    { 
+        label: "¹/ₓ", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false, 
+    },
+    { 
+        label: "²√x", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "³√x", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "ⁿ√x", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "ln", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "log₁₀", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "4", 
+        onPress: () => setMath(firstChar(mathExpression, isNumberActive, setNumberActive, '4')), 
+        background: lightColor,
+        alwaysDisable: true,
+        doubleBox: false,  
+    },
+    { 
+        label: "5", 
+        onPress: () => setMath(firstChar(mathExpression, isNumberActive, setNumberActive, '5')),
+        background: lightColor,
+        alwaysDisable: true,
+        doubleBox: false,  
+    },
+    { 
+        label: "6", 
+        onPress: () => setMath(firstChar(mathExpression, isNumberActive, setNumberActive, '6')),
+        background: lightColor,
+        alwaysDisable: true,
+        doubleBox: false, 
+    },
+    { 
+        label: "-", 
+        onPress: () => setMath(doubleOperation(mathExpression, setPoint, '-')), 
+        background: orangeColor,
+        alwaysDisable: true,
+        doubleBox: false, 
+    },
+
+    /////////////////////////////////////////////////
+
+    { 
+        label: "x!", 
+        onPress: () => setMath(doubleOperation(mathExpression + '!', setPoint)), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false, 
+    },
+    { 
+        label: "sin", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "cos", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "tan", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "e", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "EE", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "1", 
+        onPress: () => setMath(firstChar(mathExpression, isNumberActive, setNumberActive, '1')), 
+        background: lightColor,
+        alwaysDisable: true,
+        doubleBox: false,  
+    },
+    { 
+        label: "2", 
+        onPress: () => setMath(firstChar(mathExpression, isNumberActive, setNumberActive, '2')),
+        background: lightColor,
+        alwaysDisable: true,
+        doubleBox: false,  
+    },
+    { 
+        label: "3", 
+        onPress: () => setMath(firstChar(mathExpression, isNumberActive, setNumberActive, '3')),
+        background: lightColor,
+        alwaysDisable: true,
+        doubleBox: false, 
+    },
+    { 
+        label: "+", 
+        onPress: () => setMath(doubleOperation(mathExpression, setPoint, '+')), 
+        background: orangeColor,
+        alwaysDisable: true,
+        doubleBox: false, 
+    },
+    
+    /////////////////////////////////////////////////
+
+    { 
+        label: "Rad", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false, 
+    },
+    { 
+        label: "sinh", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "cosh", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "tanh", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "π", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "Rand", 
+        onPress: () => setMath(resetOperation()), 
+        background: darkColor,
+        alwaysDisable: false,
+        doubleBox: false,  
+    },
+    { 
+        label: "0", 
+        onPress: () => setMath(firstChar(mathExpression, isNumberActive, setNumberActive, '0')), 
+        background: lightColor,
+        alwaysDisable: true,
+        doubleBox: true,  
+    },
+    { 
+        label: ",", 
+        onPress: () => setMath(pointOperation(mathExpression, setPoint, pointUse, ',')), 
+        background: lightColor,
+        alwaysDisable: true,
+        doubleBox: false,
+    },
+    { 
+        label: "=", 
+        onPress: () => setMath(resultOperation(mathExpression, setPoint, setNumberActive)), 
+        background: orangeColor,
+        alwaysDisable: true,
+        doubleBox: false, 
+    },
+
+  ];
+
 
   return (
     <View style={styles.container}> 
@@ -100,7 +408,7 @@ function App(): JSX.Element {
       </View>
       <View style={styles.row}>
         {buttonsData.map((button, index) => (
-          index < 11 ? 
+          index <= 10 ? 
           <ButtonComponent
             key={index}
             onPress={button.onPress}
@@ -114,233 +422,68 @@ function App(): JSX.Element {
         ))}
       </View>
       <View style={styles.row}>
-      {isLandscape ? 
-          <>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>2ⁿᵈ</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(exp(2, mathExpression))}>
-                <Text style={styles.text}>x²</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(exp(3, mathExpression))}>
-                <Text style={styles.text}>x³</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => {setMath(mathExpression + '^'), setNumberActive(true)}}>
-                <Text style={styles.text}>xⁿ</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => {setMath(zeroFunction(mathExpression, 'e^')); setNumberActive(true)}}>
-                <Text style={styles.text}>eⁿ</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => {setMath(zeroFunction(mathExpression, '10^')); setNumberActive(true)}}>
-                <Text style={styles.text}>10ⁿ</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        : null}
-          <View style={styles.singleBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(zeroFunction(mathExpression, 7))}>
-              <Text style={styles.text}>7</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.singleBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(zeroFunction(mathExpression, 8))}>
-              <Text style={styles.text}>8</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.singleBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(zeroFunction(mathExpression, 9))}>
-              <Text style={styles.text}>9</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.yellowBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(doubleOperation(mathExpression, '×'))}>
-              <Text style={styles.text}>×</Text>
-            </TouchableOpacity>
-          </View>
+      {buttonsData.map((button, index) => (
+          index >= 11 && index <= 20 ? 
+          <ButtonComponent
+            key={index}
+            onPress={button.onPress}
+            label={button.label}
+            background={button.background}
+            style={styles}
+            alwaysDisable={button.alwaysDisable}
+            landscapeMode={isLandscape}
+            doubleBox={button.doubleBox}
+          /> : null 
+        ))}
       </View>
       <View style={styles.row}>
-      {isLandscape ? 
-          <>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>¹/ₓ</Text>
-              </TouchableOpacity>
-            </View>
-
-
-
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>²√x</Text>
-              </TouchableOpacity>
-            </View>
-
-
-
-            
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>³√x</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>ⁿ√x</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>ln</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>log₁₀</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        : null}
-      <View style={styles.singleBox}>
-          <TouchableOpacity style={styles.button} onPress={() => setMath(zeroFunction(mathExpression, 4))}>
-              <Text style={styles.text}>4</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.singleBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(zeroFunction(mathExpression, 5))}>
-              <Text style={styles.text}>5</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.singleBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(zeroFunction(mathExpression, 6))}>
-              <Text style={styles.text}>6</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.yellowBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(doubleOperation(mathExpression, '-'))}>
-              <Text style={styles.text}>-</Text>
-            </TouchableOpacity>
-          </View>
+        {buttonsData.map((button, index) => (
+          index >= 21 && index <= 30 ? 
+            <ButtonComponent
+              key={index}
+              onPress={button.onPress}
+              label={button.label}
+              background={button.background}
+              style={styles}
+              alwaysDisable={button.alwaysDisable}
+              landscapeMode={isLandscape}
+              doubleBox={button.doubleBox}
+            /> : null 
+          ))}
       </View>
       <View style={styles.row}>
-      {isLandscape ? 
-          <>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resultOperation(mathExpression + '!'))}>
-                <Text style={styles.text}>x!</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>sin</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>cos</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>tan</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>e</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>EE</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        : null}
-      <View style={styles.singleBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(zeroFunction(mathExpression, 1))}>
-              <Text style={styles.text}>1</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.singleBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(zeroFunction(mathExpression, 2))}>
-              <Text style={styles.text}>2</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.singleBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(zeroFunction(mathExpression, 3))}>
-              <Text style={styles.text}>3</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.yellowBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(doubleOperation(mathExpression, '+'))}>
-              <Text style={styles.text}>+</Text>
-            </TouchableOpacity>
-          </View>
+        {buttonsData.map((button, index) => (
+          index >= 31 && index <= 40 ? 
+            <ButtonComponent
+              key={index}
+              onPress={button.onPress}
+              label={button.label}
+              background={button.background}
+              style={styles}
+              alwaysDisable={button.alwaysDisable}
+              landscapeMode={isLandscape}
+              doubleBox={button.doubleBox}
+            /> : null 
+          ))}
       </View>
       <View style={styles.row}>
-      {isLandscape ? 
-          <>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>Rad</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>sinh</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>cosh</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>tanh</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>π</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.darkBox}>
-              <TouchableOpacity style={styles.button} onPress={() => setMath(resetOperation())}>
-                <Text style={styles.text}>Rand</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        : null}
-          <View style={styles.doubleBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(zeroFunction(mathExpression, 0))}>
-              <Text style={styles.text}>0</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.singleBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(pointOperation(mathExpression, ','))}>
-              <Text style={styles.text}>,</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.yellowBox}>
-            <TouchableOpacity style={styles.button} onPress={() => setMath(resultOperation(mathExpression))}>
-              <Text style={styles.text}>=</Text>
-            </TouchableOpacity>
-          </View>
+        {buttonsData.map((button, index) => (
+          index >= 41 && index < 50 ? 
+            <ButtonComponent
+              key={index}
+              onPress={button.onPress}
+              label={button.label}
+              background={button.background}
+              style={styles}
+              alwaysDisable={button.alwaysDisable}
+              landscapeMode={isLandscape}
+              doubleBox={button.doubleBox}
+            /> : null 
+          ))}
       </View>
     </View>
-  );
+  );        
+
 }
 
 export default App;
