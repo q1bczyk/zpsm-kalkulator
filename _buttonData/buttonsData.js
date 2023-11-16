@@ -1,3 +1,4 @@
+import { sqrt } from 'mathjs';
 import {
     resetOperation,
     firstChar,
@@ -5,6 +6,10 @@ import {
     blockDoubleOperation,
     blockDoubleChar,
     expOperation,
+    bracketSeparation,
+    sqrtFunction,
+    othersFunctions,
+    setFraction,
   } from '../_functions/funtions';  
   
   const darkColor = '#6E6E6E';
@@ -167,14 +172,14 @@ import {
 
     { 
         label: "¹/ₓ", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => setMath(setFraction(mathExpression), setNumberActive(true)), 
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false, 
     },
     { 
         label: "²√x", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => setMath(othersFunctions(1, mathExpression, setPoint, setNumberActive)), 
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false,  
@@ -195,7 +200,7 @@ import {
     },
     { 
         label: "ln", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => setMath(othersFunctions(2, mathExpression, setPoint, setNumberActive)), 
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false,  
@@ -247,28 +252,28 @@ import {
     },
     { 
         label: "sin", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => setMath(othersFunctions(2, mathExpression, setPoint, setNumberActive)), 
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false,  
     },
     { 
         label: "cos", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => setMath(othersFunctions(3, mathExpression, setPoint, setNumberActive)),  
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false,  
     },
     { 
         label: "tan", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => setMath(othersFunctions(4, mathExpression, setPoint, setNumberActive)), 
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false,  
     },
     { 
         label: "e", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => setMath('2,71828182846', setPoint(true)), 
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false,  
@@ -320,28 +325,28 @@ import {
     },
     { 
         label: "sinh", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => setMath(othersFunctions(5, mathExpression, setPoint, setNumberActive)), 
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false,  
     },
     { 
         label: "cosh", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => setMath(othersFunctions(6, mathExpression, setPoint, setNumberActive)), 
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false,  
     },
     { 
         label: "tanh", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => setMath(othersFunctions(7, mathExpression, setPoint, setNumberActive)), 
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false,  
     },
     { 
         label: "π", 
-        onPress: () => setMath(resetOperation()), 
+        onPress: () => setMath('3,14159265359', setPoint(true)), 
         background: darkColor,
         alwaysDisable: false,
         doubleBox: false,  
